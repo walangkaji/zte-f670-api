@@ -25,13 +25,8 @@ class ZteF670
         $this->username = $username;
         $this->password = $password;
         $this->proxy    = $proxy;
-
-        if ($debug) {
-            $this->debug = true;
-        }
-
+        $this->debug    = $debug ? true : false;
         $this->modemUrl = "http://$ipModem";
-
         $this->status   = new Request\Status\Status($this);
     }
 
