@@ -20,12 +20,14 @@ use walangkaji\ZteF670\GlobalFunction as Func;
  */
 class ZteF670
 {
+    public static $proxy;
+
     public function __construct($ipModem, $username, $password, $debug = false, $proxy = null)
     {
         $this->username = $username;
         $this->password = $password;
-        $this->proxy    = $proxy;
         $this->debug    = $debug ? true : false;
+        self::$proxy    = $proxy;
         $this->modemUrl = "http://$ipModem";
         $this->status   = new Request\Status\Status($this);
     }
@@ -45,7 +47,11 @@ class ZteF670
             return true;
         }
 
-        $get  = $this->request($this->modemUrl);
+        $get = (new Request)
+            ->request()
+            ->get($this->modemUrl)
+            ->getResponse();
+
         $rand = rand(10000000, 99999999);
 
         $postdata = [
@@ -57,12 +63,12 @@ class ZteF670
             'UserRandomNum'  => $rand,
         ];
 
-        $options = [
-            'method'   => 'post',
-            'postdata' => $postdata,
-        ];
 
-        $this->request($this->modemUrl, $options);
+        $get = (new Request)
+        ->request()
+        ->post($this->modemUrl, $postdata)
+        ->getResponse();
+
         $cekLogin = $this->cekLogin();
 
         if ($cekLogin) {
@@ -81,7 +87,10 @@ class ZteF670
      */
     public function reboot()
     {
-        $get = $this->request($this->modemUrl . Constants::REBOOT);
+        $get = (new Request)
+            ->request()
+            ->get($this->modemUrl . Constants::REBOOT)
+            ->getResponse();
 
         $postdata = [
             'IF_ACTION'      => 'devrestart',
@@ -92,13 +101,12 @@ class ZteF670
             '_SESSION_TOKEN' => Func::find($get, 'session_token = "', '";'),
         ];
 
-        $options = [
-            'method'   => 'post',
-            'postdata' => $postdata,
-        ];
+        $request = (new Request)
+        ->request()
+        ->post($this->modemUrl . Constants::REBOOT, $postdata)
+        ->getResponse();
 
-        $request = $this->request($this->modemUrl . Constants::REBOOT, $options);
-        $cek     = Func::find($request, "flag','", "'");
+        $cek = Func::find($request, "flag','", "'");
 
         if ($cek == 1) {
             $this->debug(__FUNCTION__, 'Berhasil Reboot modem.');
@@ -118,8 +126,10 @@ class ZteF670
      */
     private function cekLogin()
     {
-        $url      = $this->modemUrl . Constants::TEMPLATE;
-        $response = $this->request($url);
+        $response = (new Request)
+            ->request()
+            ->get($this->modemUrl . Constants::TEMPLATE)
+            ->getResponse();
 
         if (strpos($response, 'logout_redirect') !== false) {
             return false;
@@ -143,63 +153,5 @@ class ZteF670
             echo '[' . date('h:i:s A') . "]: $function" . str_repeat(' ', $space);
             echo(empty($text) ? '' : ': ' . $text) . PHP_EOL;
         }
-    }
-
-    /**
-     * Curl request
-     *
-     * @param string $url     url request
-     * @param array  $options options yang akan digunakan
-     *                        array  header    untuk setting headernya
-     *                        string useragent untuk set useragent
-     *                        string method    'post', 'put', 'delete'
-     */
-    public function request($url, $options = [])
-    {
-        $userAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/76.0.3809.87 Safari/537.36';
-
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_TIMEOUT, 30);
-        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 30);
-        curl_setopt($ch, CURLOPT_MAXREDIRS, 3);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
-        curl_setopt($ch, CURLOPT_COOKIEJAR, 'cookie.txt');
-        curl_setopt($ch, CURLOPT_COOKIEFILE, 'cookie.txt');
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
-        curl_setopt($ch, CURLOPT_USERAGENT, $userAgent);
-
-        if ($this->proxy) {
-            curl_setopt($ch, CURLOPT_PROXY, $this->proxy);
-        }
-
-        if (!empty($options)) {
-            if (isset($options['header'])) {
-                curl_setopt($ch, CURLOPT_HTTPHEADER, $options['header']);
-            } elseif (isset($options['useragent'])) {
-                curl_setopt($ch, CURLOPT_USERAGENT, $options['useragent']);
-            } elseif (isset($options['method'])) {
-                if (strtolower($options['method']) == 'post') {
-                    curl_setopt($ch, CURLOPT_POST, true);
-                    curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($options['postdata']));
-                } elseif (strtolower($options['method']) == 'delete') {
-                    curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'DELETE');
-                } elseif (strtolower($options['method']) == 'put') {
-                    curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'PUT');
-                    curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($options['postdata']));
-                }
-            }
-        }
-
-        curl_setopt($ch, CURLOPT_HEADER, 0);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-
-        $html           = curl_exec($ch);
-        $this->httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        curl_close($ch);
-
-        return $html;
     }
 }

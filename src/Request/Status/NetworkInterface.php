@@ -7,6 +7,7 @@ namespace walangkaji\ZteF670\Request\Status;
 
 use walangkaji\ZteF670\Constants;
 use walangkaji\ZteF670\GlobalFunction as Func;
+use walangkaji\ZteF670\Request;
 
 /**
  * NetworkInterface Class
@@ -25,9 +26,12 @@ class NetworkInterface extends Status
      */
     public function wanConnection()
     {
-        $request = $this->zte->request($this->zte->modemUrl . Constants::WAN_CONNECTION);
-        $dom     = str_get_html($request);
+        $request = (new Request)
+            ->request()
+            ->get($this->zte->modemUrl . Constants::WAN_CONNECTION)
+            ->getResponse();
 
+        $dom  = str_get_html($request);
         $data = [];
 
         foreach ($dom->find('table#TestContent0 tr') as $key) {
@@ -76,7 +80,11 @@ class NetworkInterface extends Status
      */
     public function ponInformation()
     {
-        $request   = $this->zte->request($this->zte->modemUrl . Constants::PON_INFORMATION);
+        $request = (new Request)
+            ->request()
+            ->get($this->zte->modemUrl . Constants::PON_INFORMATION)
+            ->getResponse();
+
         $dom       = str_get_html($request);
         $regStatus = intval(Func::find($request, 'var RegStatus = "', '"'));
 
@@ -126,8 +134,12 @@ class NetworkInterface extends Status
      */
     public function mobileNetwork()
     {
-        $request   = $this->zte->request($this->zte->modemUrl . Constants::MOBILE_NETWORK);
-        $dom       = str_get_html($request);
+        $request = (new Request)
+            ->request()
+            ->get($this->zte->modemUrl . Constants::MOBILE_NETWORK)
+            ->getResponse();
+
+        $dom = str_get_html($request);
 
         $data                     = [];
         $data['service_provider'] = null;

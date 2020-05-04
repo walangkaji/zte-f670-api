@@ -15,5 +15,8 @@
             "walangkaji\\ZteF670\\": "src/"
         },
         "classmap": ["src/"]
+    },
+    "require": {
+        "php-curl-class/php-curl-class": "^8.8"
     }
 }

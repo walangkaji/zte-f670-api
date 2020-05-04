@@ -5,6 +5,9 @@
 
 namespace walangkaji\ZteF670\Request\Status;
 
+use walangkaji\ZteF670\Constants;
+use walangkaji\ZteF670\Request;
+
 /**
  * User Interface Class
  */
@@ -22,7 +25,11 @@ class UserInterface extends Status
      */
     public function wlan()
     {
-        $request = $this->zte->request($this->zte->modemUrl . '/getpage.gch?pid=1002&nextpage=status_wlanm_info1_t.gch');
+        $request = (new Request)
+            ->request()
+            ->get($this->zte->modemUrl . Constants::STATUS_WLAN1)
+            ->getResponse();
+
         preg_match_all('/>Transfer_meaning\((.*?)\);/', $request, $match);
         $result = str_replace("'", '', $match[1]);
 
@@ -85,9 +92,13 @@ class UserInterface extends Status
      */
     public function ethernet()
     {
-        $request = $this->zte->request($this->zte->modemUrl . '/getpage.gch?pid=1002&nextpage=pon_status_lan_info_t.gch');
-        $dom     = str_get_html($request);
-        $data    = [];
+        $request = (new Request)
+            ->request()
+            ->get($this->zte->modemUrl . Constants::STATUS_ETHERNET)
+            ->getResponse();
+
+        $dom  = str_get_html($request);
+        $data = [];
 
         foreach ($dom->find('table#TestContent tr') as $key => $val) {
             $cari          = $val->find('td');
@@ -127,9 +138,13 @@ class UserInterface extends Status
      */
     public function usb()
     {
-        $request = $this->zte->request($this->zte->modemUrl . '/getpage.gch?pid=1002&nextpage=status_usb_info_t.gch');
-        $dom     = str_get_html($request);
-        $data    = [];
+        $request = (new Request)
+            ->request()
+            ->get($this->zte->modemUrl . Constants::STATUS_USB)
+            ->getResponse();
+
+        $dom  = str_get_html($request);
+        $data = [];
 
         foreach ($dom->find('table#TestContent tr') as $key => $val) {
             $cari        = $val->find('td');

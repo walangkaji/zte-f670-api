@@ -8,6 +8,7 @@ namespace walangkaji\ZteF670\Request\Status;
 use walangkaji\ZteF670\ZteF670;
 use walangkaji\ZteF670\Constants;
 use walangkaji\ZteF670\GlobalFunction as Func;
+use walangkaji\ZteF670\Request;
 
 /**
  * Status Class
@@ -28,10 +29,14 @@ class Status extends ZteF670
      */
     public function deviceInformation()
     {
-        $request = $this->zte->request($this->zte->modemUrl . Constants::DEVICE_INFORMATION);
-        $dom     = str_get_html($request);
+        $request = (new Request)
+            ->request()
+            ->get($this->zte->modemUrl . Constants::DEVICE_INFORMATION)
+            ->getResponse();
 
+        $dom  = str_get_html($request);
         $data = [];
+
         foreach ($dom->find('table#TABLE_DEV tr') as $key) {
             $cari        = $key->find('td');
             $keys        = strtolower(str_replace(' ', '_', $cari[0]->plaintext));
@@ -52,8 +57,12 @@ class Status extends ZteF670
      */
     public function voIpStatus()
     {
-        $request = $this->zte->request($this->zte->modemUrl . Constants::VOIP_STATUS);
-        $dom     = str_get_html($request);
+        $request = (new Request)
+            ->request()
+            ->get($this->zte->modemUrl . Constants::VOIP_STATUS)
+            ->getResponse();
+
+        $dom = str_get_html($request);
 
         foreach ($dom->find('table#TestContent td[class=tdright]') as $key) {
             $status[] = $key->innertext;
