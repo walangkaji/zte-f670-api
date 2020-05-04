@@ -1,0 +1,19 @@
+{
+    "name": "walangkaji/zte-f670-api",
+    "description": "ZTE F670 Unofficial API",
+    "type": "library",
+    "keywords": ["json", "php", "array"],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "walangkaji",
+            "email": "walangkaji@globaltesla.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "walangkaji\\ZteF670\\": "src/"
+        },
+        "classmap": ["src/"]
+    }
+}
