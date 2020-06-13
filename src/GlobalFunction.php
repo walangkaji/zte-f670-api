@@ -45,7 +45,12 @@ class GlobalFunction
 
     public static function getLoginToken($html)
     {
-        return (int) self::getBetween($html, 'Frm_Logintoken").value = "', '"');
+        return (int) self::getBetween($html, '"Frm_Logintoken", "', '"');
+    }
+
+    public static function getLoginCheckToken($html)
+    {
+        return self::getBetween($html, '"Frm_Loginchecktoken", "', '"');
     }
 
     public static function passwordMD5($password)

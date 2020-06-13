@@ -55,14 +55,13 @@ class ZteF670
         $rand = rand(10000000, 99999999);
 
         $postdata = [
-            'frashnum'       => '',
-            'action'         => 'login',
-            'Frm_Logintoken' => Func::getLoginToken($get),
-            'Username'       => $this->username,
-            'Password'       => md5($this->password . $rand),
-            'UserRandomNum'  => $rand,
+            'action'              => 'login',
+            'Username'            => $this->username,
+            'Password'            => hash('sha256', $this->password . $rand),
+            'Frm_Logintoken'      => Func::getLoginToken($get),
+            'UserRandomNum'       => $rand,
+            'Frm_Loginchecktoken' => Func::getLoginCheckToken($get),
         ];
-
 
         $get = (new Request)
         ->request()
@@ -131,7 +130,7 @@ class ZteF670
             ->get($this->modemUrl . Constants::TEMPLATE)
             ->getResponse();
 
-        if (strpos($response, 'logout_redirect') !== false) {
+        if (strpos($response, 'logout_redirect') !== false || strpos($response, '404 Not Found') !== false) {
             return false;
         }
 
